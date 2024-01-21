@@ -7,6 +7,28 @@
 
 #include <initializer_list>
 
+/**
+ * Ce patron de classe, sert à implanter une liste avec ses primitives de base.  Il s'agira ici d'une liste chaînée
+ * permettant un accès séquentiel aux diverses clés contenues.
+ *
+ * Dans notre modèle, le dernier élément à être inséré dans la liste aura la position 0.  Les positions valides iront
+ * donc de 0 à n-1 où n est le nombre d'éléments dans la liste.
+ *
+ * Pour l'insertion, par-contre, on pourra insérer de 0 à n, n correspondra à insérer un élément en dernière position.
+ *
+ * Les primitives suivantes seront implantées:
+ *
+ * Construction d'une liste vide
+ * Construction d'une liste à partir d'une liste de clés prédéterminée.
+ * Insérer une clé en premier (position 0)
+ * Lire la première clé
+ * Supprimer la première clé
+ * Insérer à une position donnée
+ * Lire la clé à une position donnée
+ * Supprimer la clé se trouvant à une position donnée
+ *
+ * @tparam Cle_t Type des éléments contenus dans la liste.
+ */
 template <typename Cle_t>
 class ListeSimple {
 
