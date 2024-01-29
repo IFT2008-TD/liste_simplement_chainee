@@ -62,10 +62,18 @@ public:
     Cle_t lire_a_position(size_t pos) const ;
     void supprimer_a_position(size_t pos) ;
 
+    // Formattage
+
+    std::string to_string() const ;
+
+private:
+    Cellule* trouverAdresseDeLaPosition(size_t n) const ;
+
 
 
 private:
     Cellule* premier ;
+    size_t cardinal ;
 
 };
 

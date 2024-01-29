@@ -13,7 +13,7 @@
  * @tparam Cle_t
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple() : premier(nullptr) {
+ListeSimple<Cle_t>::ListeSimple() : premier(nullptr), cardinal(0) {
 
 }
 
@@ -24,7 +24,7 @@ ListeSimple<Cle_t>::ListeSimple() : premier(nullptr) {
  * @param inlis Liste des clés à insérer
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nullptr) {
+ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nullptr), cardinal(0) {
     for (auto e: inlis) ajouter_en_premier(e) ;
 }
 
@@ -36,7 +36,7 @@ ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nu
  */
 template <typename T>
 bool ListeSimple<T>::est_vide() const {
-    return premier == nullptr ;
+    return cardinal == 0 ;
 }
 
 
@@ -47,7 +47,7 @@ bool ListeSimple<T>::est_vide() const {
  */
 template<typename Cle_t>
 size_t ListeSimple<Cle_t>::taille() const {
-    return 0;
+    return cardinal ;
 }
 
 
@@ -59,7 +59,7 @@ size_t ListeSimple<Cle_t>::taille() const {
  */
 template<typename Cle_t>
 bool ListeSimple<Cle_t>::cle_presente(Cle_t cle) const {
-    return false ;
+    return trouver_cle(cle) != taille() ;
 }
 
 
@@ -67,11 +67,21 @@ bool ListeSimple<Cle_t>::cle_presente(Cle_t cle) const {
  * Localise une clé dans la liste
  * @tparam Cle_t
  * @param cle Clé à localiser
- * @return La position de la clé dans la liste, 0 étant en premier.
+ * @return La position de la clé dans la liste, 0 étant en premier. Si la clé cherchée n'est pas dans la liste
+ * le cardinal de la liste sera retourné.
  */
 template<typename Cle_t>
 size_t ListeSimple<Cle_t>::trouver_cle(Cle_t cle) const {
-    return 0;
+    if (est_vide()) throw std::logic_error("trouver_cle: liste vide") ;
+
+    Cellule* p = premier ;
+    size_t index = 0 ;
+    while (p != nullptr) {
+        if (p->cle == cle) break ;
+        index += 1 ;
+        p = p->prochain ;
+    }
+    return index ;
 }
 
 
@@ -85,6 +95,7 @@ void ListeSimple<Cle_t>::ajouter_en_premier(Cle_t cle) {
     auto* nouvelle = new Cellule(cle) ;
     nouvelle->prochain = premier ;
     premier = nouvelle ;
+    cardinal += 1 ;
 }
 
 
@@ -109,7 +120,11 @@ Cle_t ListeSimple<Cle_t>::lire_premier() const {
  */
 template<typename Cle_t>
 void ListeSimple<Cle_t>::supprimer_premier() {
-
+    if (est_vide()) throw std::logic_error("supprimer_premier: liste vide") ;
+    auto temp = premier->prochain ;
+    delete premier ;
+    premier = temp ;
+    cardinal -= 1 ;
 }
 
 
@@ -123,7 +138,15 @@ void ListeSimple<Cle_t>::supprimer_premier() {
  */
 template <typename Cle_t>
 void ListeSimple<Cle_t>::ajouter_a_position(size_t n, Cle_t cle) {
-
+    if (n > taille()) throw std::invalid_argument("ajouter_a_position: index invalide") ;
+    if (n == 0) ajouter_en_premier(cle) ;
+    else {
+        auto nouveau = new Cellule(cle) ;
+        auto p = trouverAdresseDeLaPosition(n - 1) ;
+        nouveau->prochain = p->prochain ;
+        p->prochain = nouveau ;
+        cardinal += 1 ;
+    }
 }
 
 
@@ -137,7 +160,9 @@ void ListeSimple<Cle_t>::ajouter_a_position(size_t n, Cle_t cle) {
  */
 template<typename Cle_t>
 Cle_t ListeSimple<Cle_t>::lire_a_position(size_t pos) const {
-    return Cle_t() ;
+    if (pos >= taille()) throw std::invalid_argument("lire_a_position: index non-valide") ;
+    auto p = trouverAdresseDeLaPosition(pos) ;
+    return p->cle ;
 }
 
 
@@ -150,7 +175,40 @@ Cle_t ListeSimple<Cle_t>::lire_a_position(size_t pos) const {
  */
 template<typename Cle_t>
 void ListeSimple<Cle_t>::supprimer_a_position(size_t pos) {
+    if (pos >= taille()) throw std::invalid_argument("supprimer_a_position: index non valide") ;
+    if (pos == 0) supprimer_premier() ;
+    else {
+        auto p = trouverAdresseDeLaPosition(pos-1) ;
+        auto suivant = p->prochain ;
+        p->prochain = suivant->prochain ;
+        delete suivant ;
+        cardinal -= 1 ;
+    }
+}
 
+template<typename Cle_t>
+std::string ListeSimple<Cle_t>::to_string() const {
+    std::ostringstream s ;
+    s << "[" ;
+    auto p = premier ;
+    while (p != nullptr) {
+        s << p->cle ;
+        p = p->prochain ;
+        if (p != nullptr) s << ", " ;
+    }
+    s << "]" ;
+    return s.str() ;
+}
+
+template<typename Cle_t>
+typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::trouverAdresseDeLaPosition(size_t n) const {
+    auto p = premier ;
+    size_t i = 0 ;
+    while (i < n) {
+        p = p->prochain ;
+        ++i ;
+    }
+    return p ;
 }
 
 

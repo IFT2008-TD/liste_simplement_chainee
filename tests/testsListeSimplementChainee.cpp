@@ -49,6 +49,11 @@ TEST(ListeSimple, ajouter_en_premier_deux_cles) {
     EXPECT_FALSE(l.est_vide()) ;
 }
 
+TEST_F(ListeSimpleTest, to_string) {
+    EXPECT_EQ("[]", lvide.to_string()) ;
+    EXPECT_EQ("[42]", l1.to_string()) ;
+    EXPECT_EQ("[23, 666]", l2.to_string()) ;
+}
 TEST_F(ListeSimpleTest, est_vide) {
     EXPECT_TRUE(lvide.est_vide()) ;
     EXPECT_FALSE(l1.est_vide()) ;
@@ -58,5 +63,30 @@ TEST_F(ListeSimpleTest, est_vide) {
 TEST_F(ListeSimpleTest, lire_premier) {
     EXPECT_EQ(42, l1.lire_premier());
     EXPECT_EQ(23, l2.lire_premier());
+}
+
+TEST_F(ListeSimpleTest, supprimer_premier) {
+    EXPECT_THROW(lvide.supprimer_premier(), std::logic_error) ;
+    l1.supprimer_premier() ;
+    EXPECT_TRUE(l1.est_vide()) ;
+    l2.supprimer_premier() ;
+    EXPECT_EQ("[666]", l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, ajouter_a_position) {
+    EXPECT_THROW(lvide.ajouter_a_position(1, 666), std::invalid_argument) ;
+    lvide.ajouter_a_position(0, 666) ;
+    EXPECT_EQ("[666]", lvide.to_string()) ;
+    l2.ajouter_a_position(1, 888) ;
+    EXPECT_EQ("[23, 888, 666]", l2.to_string()) ;
+    l2.ajouter_a_position(3, 777) ;
+    EXPECT_EQ("[23, 888, 666, 777]", l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, supprimer_a_position) {
+    l2.supprimer_a_position(1) ;
+    EXPECT_EQ("[23]", l2.to_string()) ;
+    l2.supprimer_a_position(0) ;
+    EXPECT_TRUE(l2.est_vide()) ;
 }
 
