@@ -90,3 +90,20 @@ TEST_F(ListeSimpleTest, supprimer_a_position) {
     EXPECT_TRUE(l2.est_vide()) ;
 }
 
+
+TEST_F(ListeSimpleTest, constructeur_copie) {
+    ListeSimple<int> cpvide(lvide) ;
+    EXPECT_TRUE(cpvide.est_vide()) ;
+
+    ListeSimple<int> cpl1(l1) ;
+    EXPECT_EQ(l1.to_string(), cpl1.to_string()) ;
+
+    ListeSimple<int> cpl2(l2) ;
+    EXPECT_EQ(l2.to_string(), l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, affectation) {
+    lvide = l2 ;
+    EXPECT_EQ(lvide.to_string(), l2.to_string()) ;
+}
+

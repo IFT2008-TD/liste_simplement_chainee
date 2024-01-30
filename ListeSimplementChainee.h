@@ -44,6 +44,9 @@ private:
 public:
     explicit ListeSimple() ;
     ListeSimple(std::initializer_list<Cle_t> inlis) ;
+    ListeSimple(const ListeSimple<Cle_t>& source) ;
+    ListeSimple<Cle_t>& operator = (ListeSimple<Cle_t> rhs) ;
+    ~ListeSimple() ;
 
     bool est_vide() const ;
     size_t taille() const ;
@@ -68,6 +71,8 @@ public:
 
 private:
     Cellule* trouverAdresseDeLaPosition(size_t n) const ;
+    Cellule* aux_copier_liste(Cellule* liste) ;
+    void aux_detruire_liste(Cellule* liste) ;
 
 
 
@@ -76,6 +81,8 @@ private:
     size_t cardinal ;
 
 };
+
+
 
 #include "ListeSimplementChaineeImplantation.h"
 

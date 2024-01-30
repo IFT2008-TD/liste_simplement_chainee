@@ -28,6 +28,16 @@ ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nu
     for (auto e: inlis) ajouter_en_premier(e) ;
 }
 
+/**
+ * Méthode de Coplien: constructeur de copie
+ * @tparam Cle_t
+ * @param source Liste à copier
+ */
+template<typename Cle_t>
+ListeSimple<Cle_t>::ListeSimple(const ListeSimple<Cle_t> &source) : premier(nullptr), cardinal(0) {
+   premier = aux_copier_liste(source.premier) ;
+}
+
 
 /**
  * Vérifie si la liste contient des éléments.
@@ -209,6 +219,33 @@ typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::trouverAdresseDeLaPosi
         ++i ;
     }
     return p ;
+}
+
+template<typename Cle_t>
+typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::aux_copier_liste(Cellule* liste) {
+    if (liste == nullptr) return nullptr ;
+    auto nouveau = new Cellule(liste->cle) ;
+    nouveau->prochain = aux_copier_liste(liste->prochain) ;
+    return nouveau ;
+}
+
+template<typename Cle_t>
+ListeSimple<Cle_t>::~ListeSimple() {
+    aux_detruire_liste(premier) ;
+}
+
+template<typename Cle_t>
+void ListeSimple<Cle_t>::aux_detruire_liste(Cellule* liste) {
+    if (liste == nullptr) return ;
+    aux_detruire_liste(liste->prochain) ;
+    delete liste ;
+}
+
+template<typename Cle_t>
+ListeSimple<Cle_t> &ListeSimple<Cle_t>::operator=(ListeSimple<Cle_t> rhs) {
+    std::swap(cardinal, rhs.cardinal) ;
+    std::swap(premier, rhs.premier) ;
+    return *this ;
 }
 
 
