@@ -44,7 +44,11 @@ private:
 public:
     explicit ListeSimple() ;
     ListeSimple(std::initializer_list<Cle_t> inlis) ;
+
+    // Coplien...
+
     ListeSimple(const ListeSimple<Cle_t>& source) ;
+    ListeSimple(ListeSimple&& source) noexcept ;
     ListeSimple<Cle_t>& operator = (ListeSimple<Cle_t> rhs) ;
     ~ListeSimple() ;
 
@@ -73,6 +77,8 @@ private:
     Cellule* trouverAdresseDeLaPosition(size_t n) const ;
     Cellule* aux_copier_liste(Cellule* liste) ;
     void aux_detruire_liste(Cellule* liste) ;
+
+    bool invariant() const ;
 
 
 

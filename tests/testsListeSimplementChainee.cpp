@@ -104,6 +104,16 @@ TEST_F(ListeSimpleTest, constructeur_copie) {
 
 TEST_F(ListeSimpleTest, affectation) {
     lvide = l2 ;
+    EXPECT_EQ(2, lvide.taille()) ;
     EXPECT_EQ(lvide.to_string(), l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, déplacement) {
+    std::string attendue = l2.to_string() ;
+    lvide = std::move(l2) ;
+    EXPECT_EQ(2, lvide.taille()) ;
+
+    // Attention, ici l2 est inutilisable
+    EXPECT_EQ(lvide.to_string(), attendue) ;
 }
 

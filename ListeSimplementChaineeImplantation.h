@@ -14,7 +14,7 @@
  */
 template<typename Cle_t>
 ListeSimple<Cle_t>::ListeSimple() : premier(nullptr), cardinal(0) {
-
+    assert(invariant()) ;
 }
 
 
@@ -26,6 +26,7 @@ ListeSimple<Cle_t>::ListeSimple() : premier(nullptr), cardinal(0) {
 template<typename Cle_t>
 ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nullptr), cardinal(0) {
     for (auto e: inlis) ajouter_en_premier(e) ;
+    assert(invariant()) ;
 }
 
 /**
@@ -36,6 +37,18 @@ ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nu
 template<typename Cle_t>
 ListeSimple<Cle_t>::ListeSimple(const ListeSimple<Cle_t> &source) : premier(nullptr), cardinal(0) {
    premier = aux_copier_liste(source.premier) ;
+    assert(invariant()) ;
+}
+
+/**
+ * Constructeur de déplacement
+ * @param source Liste à copier.  ATTENTION : source est inutilisable après déplacement!!!
+ */
+template<typename Cle_t>
+ListeSimple<Cle_t>::ListeSimple(ListeSimple &&source) noexcept : premier(source.premier), cardinal(source.cardinal){
+    source.premier = nullptr ;
+    source.cardinal = 0 ;
+    assert(invariant()) ;
 }
 
 
@@ -106,6 +119,8 @@ void ListeSimple<Cle_t>::ajouter_en_premier(Cle_t cle) {
     nouvelle->prochain = premier ;
     premier = nouvelle ;
     cardinal += 1 ;
+
+    assert(invariant()) ;
 }
 
 
@@ -135,6 +150,8 @@ void ListeSimple<Cle_t>::supprimer_premier() {
     delete premier ;
     premier = temp ;
     cardinal -= 1 ;
+
+    assert(invariant()) ;
 }
 
 
@@ -157,6 +174,8 @@ void ListeSimple<Cle_t>::ajouter_a_position(size_t n, Cle_t cle) {
         p->prochain = nouveau ;
         cardinal += 1 ;
     }
+
+    assert(invariant()) ;
 }
 
 
@@ -194,6 +213,8 @@ void ListeSimple<Cle_t>::supprimer_a_position(size_t pos) {
         delete suivant ;
         cardinal -= 1 ;
     }
+
+    assert(invariant()) ;
 }
 
 template<typename Cle_t>
@@ -226,25 +247,44 @@ typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::aux_copier_liste(Cellu
     if (liste == nullptr) return nullptr ;
     auto nouveau = new Cellule(liste->cle) ;
     nouveau->prochain = aux_copier_liste(liste->prochain) ;
+    ++ cardinal ;
     return nouveau ;
 }
 
 template<typename Cle_t>
 ListeSimple<Cle_t>::~ListeSimple() {
     aux_detruire_liste(premier) ;
+    premier = nullptr ;
+    assert(invariant()) ;
 }
 
 template<typename Cle_t>
 void ListeSimple<Cle_t>::aux_detruire_liste(Cellule* liste) {
     if (liste == nullptr) return ;
+
     aux_detruire_liste(liste->prochain) ;
+    -- cardinal ;
     delete liste ;
 }
 
 template<typename Cle_t>
-ListeSimple<Cle_t> &ListeSimple<Cle_t>::operator=(ListeSimple<Cle_t> rhs) {
+bool ListeSimple<Cle_t>::invariant() const {
+    if (cardinal == 0) return premier == nullptr ;
+    size_t compteur = 0 ;
+    auto current = premier ;
+    while (current != nullptr) {
+        current = current->prochain ;
+        ++ compteur ;
+    }
+    return compteur == cardinal ;
+}
+
+template<typename Cle_t>
+ListeSimple<Cle_t> &ListeSimple<Cle_t>::operator=(ListeSimple rhs) {
     std::swap(cardinal, rhs.cardinal) ;
     std::swap(premier, rhs.premier) ;
+
+    assert(invariant()) ;
     return *this ;
 }
 
