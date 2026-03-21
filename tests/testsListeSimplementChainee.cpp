@@ -117,3 +117,27 @@ TEST_F(ListeSimpleTest, déplacement) {
     EXPECT_EQ(lvide.to_string(), attendue) ;
 }
 
+TEST_F(ListeSimpleTest, utilisation_de_find) {
+    auto it = std::find(l2.begin(), l2.end(), 23) ;
+    EXPECT_EQ(23, *it) ;
+}
+
+TEST_F(ListeSimpleTest, utilisation_de_find_if) {
+    auto it = std::find_if(l2.begin(), l2.end(), [](int x) {
+        return x - 1 == 665 ;
+    }) ;
+    EXPECT_EQ(666, *it) ;
+}
+
+TEST_F(ListeSimpleTest, utilisation_de_find_absent) {
+    auto it = std::find(l2.begin(), l2.end(), 0) ;
+    EXPECT_EQ(l2.end(), it) ;
+}
+
+TEST_F(ListeSimpleTest, utilisation_de_find_if_absent) {
+    auto it = std::find_if(l2.begin(), l2.end(), [](int x) {
+        return x - 1 == 2000 ;
+    }) ;
+    EXPECT_EQ(l2.end(), it) ;
+}
+

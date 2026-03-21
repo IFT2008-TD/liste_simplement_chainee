@@ -1,4 +1,4 @@
-set(TEST_SOURCES testsListeSimplementChainee.cpp)
+set(TEST_SOURCES testsListeSimplementChainee.cpp testsmaxheap.cpp)
 
 add_executable(
         testsListeSimplementChainee

@@ -6,6 +6,7 @@
 #define LISTE_SIMPLEMENT_CHAINEE_LISTESIMPLEMENTCHAINEE_H
 
 #include <initializer_list>
+#include <sstream>
 
 /**
  * Ce patron de classe, sert à implanter une liste avec ses primitives de base.  Il s'agira ici d'une liste chaînée
@@ -42,6 +43,45 @@ private:
     };
 
 public:
+
+    class iterator {
+        Cellule* courant ;
+
+    public:
+        using value_type = Cle_t ;
+        using difference_type = std::ptrdiff_t ;
+        using pointer = Cle_t* ;
+        using reference = Cle_t& ;
+        using iterator_category = std::forward_iterator_tag ;
+
+        explicit iterator(Cellule* cell) : courant(cell) {}
+
+        reference operator*() {return courant->cle ; }
+        pointer operator -> () {return &(courant->cle) ; }
+
+        iterator& operator ++() {
+            courant = courant->prochain ;
+            return *this ;
+        }
+
+        iterator operator ++(int) {
+            iterator temp = *this ;
+            courant = courant->prochain ;
+            return temp ;
+        }
+
+        bool operator == (const iterator& autre) const {
+            return courant == autre.courant ;
+        }
+
+        bool operator != (const iterator& autre) const {
+            return courant != autre.courant ;
+        }
+    };
+
+    iterator begin() {return iterator(premier) ; }
+    iterator end() {return iterator(nullptr) ; }
+
     explicit ListeSimple() ;
     ListeSimple(std::initializer_list<Cle_t> inlis) ;
 
