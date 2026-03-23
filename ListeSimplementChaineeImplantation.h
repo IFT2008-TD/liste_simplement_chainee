@@ -13,7 +13,7 @@
  * @tparam Cle_t
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple() : premier(nullptr), cardinal(0) {
+ListeSimple<Cle_t>::ListeSimple() : sentinelle(new Cellule), premier(sentinelle), cardinal(0) {
     assert(invariant()) ;
 }
 
@@ -24,8 +24,8 @@ ListeSimple<Cle_t>::ListeSimple() : premier(nullptr), cardinal(0) {
  * @param inlis Liste des clés à insérer
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nullptr), cardinal(0) {
-    for (auto e: inlis) ajouter_en_premier(e) ;
+ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : sentinelle(new Cellule), premier(sentinelle), cardinal(0) {
+    for (auto e: inlis) ajouter_premier(e) ;
     assert(invariant()) ;
 }
 
@@ -35,8 +35,10 @@ ListeSimple<Cle_t>::ListeSimple(std::initializer_list<Cle_t> inlis) : premier(nu
  * @param source Liste à copier
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple(const ListeSimple<Cle_t> &source) : premier(nullptr), cardinal(0) {
-   premier = aux_copier_liste(source.premier) ;
+ListeSimple<Cle_t>::ListeSimple(const ListeSimple<Cle_t> &source) : sentinelle(nullptr), premier(aux_copier_liste(source.premier)), cardinal(source.cardinal) {
+    auto s = premier ;
+    while (s->prochain != nullptr) s = s->prochain ;
+    sentinelle = s ;
     assert(invariant()) ;
 }
 
@@ -45,7 +47,8 @@ ListeSimple<Cle_t>::ListeSimple(const ListeSimple<Cle_t> &source) : premier(null
  * @param source Liste à copier.  ATTENTION : source est inutilisable après déplacement!!!
  */
 template<typename Cle_t>
-ListeSimple<Cle_t>::ListeSimple(ListeSimple &&source) noexcept : premier(source.premier), cardinal(source.cardinal){
+ListeSimple<Cle_t>::ListeSimple(ListeSimple &&source) noexcept : sentinelle(source.sentinelle), premier(source.premier), cardinal(source.cardinal){
+    source.sentinelle = nullptr ;
     source.premier = nullptr ;
     source.cardinal = 0 ;
     assert(invariant()) ;
@@ -54,12 +57,12 @@ ListeSimple<Cle_t>::ListeSimple(ListeSimple &&source) noexcept : premier(source.
 
 /**
  * Vérifie si la liste contient des éléments.
- * @tparam T
- * @return true si la liste est vide.
+ * @tparam Cle_t
+ * @return Retourne true si la liste est vide.
  */
-template <typename T>
-bool ListeSimple<T>::est_vide() const {
-    return cardinal == 0 ;
+template <typename Cle_t>
+bool ListeSimple<Cle_t>::est_vide() const {
+    return taille() == 0 ;
 }
 
 
@@ -73,38 +76,46 @@ size_t ListeSimple<Cle_t>::taille() const {
     return cardinal ;
 }
 
-
-/**
- * Vérifie si une clé donnée est dans la liste.
- * @tparam Cle_t
- * @param cle Clé recherchée
- * @return true si la clé recherchée est dans la liste, sinon false.
- */
+// Retourne un itérateur sur la clé demandée, ou end()
 template<typename Cle_t>
-bool ListeSimple<Cle_t>::cle_presente(Cle_t cle) const {
-    return trouver_cle(cle) != taille() ;
+typename ListeSimple<Cle_t>::iterator ListeSimple<Cle_t>::trouver(const Cle_t &cle) const {
+    return std::find(begin(), end(), cle) ;
 }
 
-
 /**
- * Localise une clé dans la liste
- * @tparam Cle_t
- * @param cle Clé à localiser
- * @return La position de la clé dans la liste, 0 étant en premier. Si la clé cherchée n'est pas dans la liste
- * le cardinal de la liste sera retourné.
+ * Retire l'élément pointé par l'itérateur.
+ * @param it Localise l'élément à retirer
+ * @return Un itérateur sur le prochain élément
  */
 template<typename Cle_t>
-size_t ListeSimple<Cle_t>::trouver_cle(Cle_t cle) const {
-    if (est_vide()) throw std::logic_error("trouver_cle: liste vide") ;
+typename ListeSimple<Cle_t>::iterator ListeSimple<Cle_t>::supprimer(iterator it) {
+    auto p = it.courant ;
 
-    Cellule* p = premier ;
-    size_t index = 0 ;
-    while (p != nullptr) {
-        if (p->cle == cle) break ;
-        index += 1 ;
-        p = p->prochain ;
-    }
-    return index ;
+    p->cle = p->prochain->cle ;
+    if (p->prochain == sentinelle) sentinelle = p ;
+    auto r = p->prochain ;
+    p->prochain = p->prochain->prochain ;
+    delete r ;
+    -- cardinal ;
+    return iterator(p) ;
+}
+
+/**
+ * Insérer à un itérateur
+ * @param it Itérateur
+ * @param cle Nouvelle clé à insérer
+ * @return Un itérateur sur l'élément inséré
+ */
+template<typename Cle_t>
+typename ListeSimple<Cle_t>::iterator ListeSimple<Cle_t>::inserer(iterator it, const Cle_t& cle) {
+    auto p = it.courant ;
+    auto n = new Cellule(*it) ;
+
+    n->prochain = p->prochain ;
+    p->prochain = n ;
+    p->cle = cle ;
+
+    return iterator(p) ;
 }
 
 
@@ -114,26 +125,13 @@ size_t ListeSimple<Cle_t>::trouver_cle(Cle_t cle) const {
  * @param cle Clé à ajouter
  */
 template<typename Cle_t>
-void ListeSimple<Cle_t>::ajouter_en_premier(Cle_t cle) {
+void ListeSimple<Cle_t>::ajouter_premier(Cle_t cle) {
     auto* nouvelle = new Cellule(cle) ;
     nouvelle->prochain = premier ;
     premier = nouvelle ;
     cardinal += 1 ;
 
     assert(invariant()) ;
-}
-
-
-/**
- * Lis la première clé de la liste
- * @tparam Cle_t
- * @return La valeur de la clé en position 0
- * @pre La liste est non vide
- * @throw std::logic_error si la liste est vide
- */
-template<typename Cle_t>
-Cle_t ListeSimple<Cle_t>::lire_premier() const {
-    return premier->cle ;
 }
 
 
@@ -154,133 +152,74 @@ void ListeSimple<Cle_t>::supprimer_premier() {
     assert(invariant()) ;
 }
 
-
-/**
- * Ajoute une clé à la position demandée.
- * @tparam Cle_t
- * @param n Position dans la liste, 0 étant le premier élément
- * @param cle Clé à rajouter.
- * @pre 0 <= n <= cardinal de la liste.  Lorsque n correspond au cardinal de la liste, l'insertion est en dernier.
- * @throw std::logic_error si n est hors-limite
- */
-template <typename Cle_t>
-void ListeSimple<Cle_t>::ajouter_a_position(size_t n, Cle_t cle) {
-    if (n > taille()) throw std::invalid_argument("ajouter_a_position: index invalide") ;
-    if (n == 0) ajouter_en_premier(cle) ;
-    else {
-        auto nouveau = new Cellule(cle) ;
-        auto p = trouverAdresseDeLaPosition(n - 1) ;
-        nouveau->prochain = p->prochain ;
-        p->prochain = nouveau ;
-        cardinal += 1 ;
-    }
-
-    assert(invariant()) ;
-}
-
-
-/**
- * Lit la clé à la position demandée.
- * @tparam Cle_t
- * @param pos Position
- * @return Valeur de la clé
- * @pre  0 <= pos < cardinal de la liste
- * @throw std::logic_error si la position est hors-limites ou la liste est vide
- */
+// true si la clé est trouvée
 template<typename Cle_t>
-Cle_t ListeSimple<Cle_t>::lire_a_position(size_t pos) const {
-    if (pos >= taille()) throw std::invalid_argument("lire_a_position: index non-valide") ;
-    auto p = trouverAdresseDeLaPosition(pos) ;
-    return p->cle ;
+bool ListeSimple<Cle_t>::cle_presente(const Cle_t &cle) const {
+    return trouver(cle) != end() ;
 }
 
-
-/**
- * Supprime la clé à la position demandée
- * @tparam Cle_t
- * @param pos Position où faire la suppression
- * @pre 0 <= pos < cardinal de la liste
- * @throw std::logic_error si la position est hors-limite ou la liste est vide
- */
-template<typename Cle_t>
-void ListeSimple<Cle_t>::supprimer_a_position(size_t pos) {
-    if (pos >= taille()) throw std::invalid_argument("supprimer_a_position: index non valide") ;
-    if (pos == 0) supprimer_premier() ;
-    else {
-        auto p = trouverAdresseDeLaPosition(pos-1) ;
-        auto suivant = p->prochain ;
-        p->prochain = suivant->prochain ;
-        delete suivant ;
-        cardinal -= 1 ;
-    }
-
-    assert(invariant()) ;
-}
-
+// Représenter comme [e1, e2, e3, e4]
 template<typename Cle_t>
 std::string ListeSimple<Cle_t>::to_string() const {
     std::ostringstream s ;
     s << "[" ;
     auto p = premier ;
-    while (p != nullptr) {
+    while (p->prochain != nullptr) {
         s << p->cle ;
         p = p->prochain ;
-        if (p != nullptr) s << ", " ;
+        if (p->prochain != nullptr) s << ", " ;
     }
     s << "]" ;
     return s.str() ;
 }
 
-template<typename Cle_t>
-typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::trouverAdresseDeLaPosition(size_t n) const {
-    auto p = premier ;
-    size_t i = 0 ;
-    while (i < n) {
-        p = p->prochain ;
-        ++i ;
-    }
-    return p ;
-}
-
+// Copier récursivement une sous-liste de gauche à droite
 template<typename Cle_t>
 typename ListeSimple<Cle_t>::Cellule *ListeSimple<Cle_t>::aux_copier_liste(Cellule* liste) {
     if (liste == nullptr) return nullptr ;
     auto nouveau = new Cellule(liste->cle) ;
     nouveau->prochain = aux_copier_liste(liste->prochain) ;
-    ++ cardinal ;
     return nouveau ;
 }
 
+// Good ole destructor
 template<typename Cle_t>
 ListeSimple<Cle_t>::~ListeSimple() {
     aux_detruire_liste(premier) ;
-    premier = nullptr ;
-    assert(invariant()) ;
 }
 
+// Détruire récursivement de droite à gauche une liste
 template<typename Cle_t>
 void ListeSimple<Cle_t>::aux_detruire_liste(Cellule* liste) {
     if (liste == nullptr) return ;
 
     aux_detruire_liste(liste->prochain) ;
-    -- cardinal ;
     delete liste ;
 }
 
+/**
+ * Validité : lorsqu'on fait cardinal sauts à partir de premier, on se retrouve à la sentinelle.  Celle-ci pointe sur
+ * nullptr.
+ * @return Retourne true si la liste est valide
+ */
 template<typename Cle_t>
 bool ListeSimple<Cle_t>::invariant() const {
-    if (cardinal == 0) return premier == nullptr ;
+    if (cardinal == 0) if (premier != sentinelle) return false ;
     size_t compteur = 0 ;
     auto current = premier ;
-    while (current != nullptr) {
+    while (current != sentinelle) {
+        if (current == nullptr) return false ;
         current = current->prochain ;
         ++ compteur ;
     }
-    return compteur == cardinal ;
+    if (compteur != cardinal) return false ;
+    return sentinelle->prochain == nullptr ;
 }
 
+// Affectation copy-swap
 template<typename Cle_t>
 ListeSimple<Cle_t> &ListeSimple<Cle_t>::operator=(ListeSimple rhs) {
+    std::swap(sentinelle, rhs.sentinelle) ;
     std::swap(cardinal, rhs.cardinal) ;
     std::swap(premier, rhs.premier) ;
 

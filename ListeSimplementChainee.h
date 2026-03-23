@@ -7,6 +7,7 @@
 
 #include <initializer_list>
 #include <sstream>
+#include <cassert>
 
 /**
  * Ce patron de classe, sert à implanter une liste avec ses primitives de base.  Il s'agira ici d'une liste chaînée
@@ -39,12 +40,16 @@ private:
         Cle_t cle ;
         Cellule* prochain ;
 
-        explicit Cellule(Cle_t nouvelleCle) : cle(nouvelleCle), prochain(nullptr) {} ;
+        // Le constructeur par défaut est nécessaire pour la sentinelle.
+        Cellule() : cle(), prochain(nullptr) {}
+        explicit Cellule(Cle_t nouvelleCle) : cle(nouvelleCle), prochain(nullptr) {}
     };
 
 public:
 
     class iterator {
+        friend class ListeSimple ;
+
         Cellule* courant ;
 
     public:
@@ -79,8 +84,9 @@ public:
         }
     };
 
-    iterator begin() {return iterator(premier) ; }
-    iterator end() {return iterator(nullptr) ; }
+
+    iterator begin() const {return iterator(premier) ; }
+    iterator end() const {return iterator(sentinelle) ; }
 
     explicit ListeSimple() ;
     ListeSimple(std::initializer_list<Cle_t> inlis) ;
@@ -94,27 +100,24 @@ public:
 
     bool est_vide() const ;
     size_t taille() const ;
-    bool cle_presente(Cle_t cle) const ;
-    size_t trouver_cle(Cle_t cle) const ;
+
+    // Méthodes utilisant les itérateurs
+
+    iterator trouver(const Cle_t& cle) const ;
+    iterator supprimer(iterator it) ;
+    iterator inserer(iterator it, const Cle_t &cle) ;
 
     // Manipulations du premier élément
 
-    void ajouter_en_premier(Cle_t cle) ;
-    Cle_t lire_premier() const ;
+    void ajouter_premier(Cle_t cle) ;
     void supprimer_premier() ;
 
-    // Manipulations de l'élément en position n
+    // Débogage
 
-    void ajouter_a_position(size_t n, Cle_t cle) ;
-    Cle_t lire_a_position(size_t pos) const ;
-    void supprimer_a_position(size_t pos) ;
-
-    // Formattage
-
+    bool cle_presente(const Cle_t& cle) const ;
     std::string to_string() const ;
 
 private:
-    Cellule* trouverAdresseDeLaPosition(size_t n) const ;
     Cellule* aux_copier_liste(Cellule* liste) ;
     void aux_detruire_liste(Cellule* liste) ;
 
@@ -123,6 +126,7 @@ private:
 
 
 private:
+    Cellule* sentinelle ;
     Cellule* premier ;
     size_t cardinal ;
 
