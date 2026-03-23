@@ -97,6 +97,8 @@ typename ListeSimple<Cle_t>::iterator ListeSimple<Cle_t>::supprimer(iterator it)
     p->prochain = p->prochain->prochain ;
     delete r ;
     -- cardinal ;
+
+    assert(invariant()) ;
     return iterator(p) ;
 }
 
@@ -114,6 +116,9 @@ typename ListeSimple<Cle_t>::iterator ListeSimple<Cle_t>::inserer(iterator it, c
     n->prochain = p->prochain ;
     p->prochain = n ;
     p->cle = cle ;
+    ++ cardinal ;
+
+    if (n->prochain == nullptr) sentinelle = n ;
 
     return iterator(p) ;
 }
