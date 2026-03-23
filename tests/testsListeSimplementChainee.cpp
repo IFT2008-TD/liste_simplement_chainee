@@ -70,6 +70,11 @@ TEST_F(ListeSimpleTest, supprimer_premier) {
     EXPECT_EQ("[666]", l2.to_string()) ;
 }
 
+TEST_F(ListeSimpleTest, insert_dans_vide) {
+    lvide.inserer(lvide.begin(), 23) ;
+    EXPECT_EQ("[23]", lvide.to_string()) ;
+}
+
 TEST_F(ListeSimpleTest, insert_en_premier) {
     l1.inserer(l1.begin(), 23) ;
     EXPECT_EQ("[23, 42]", l1.to_string()) ;
@@ -78,6 +83,29 @@ TEST_F(ListeSimpleTest, insert_en_premier) {
 TEST_F(ListeSimpleTest, insert_en_dernier) {
     l1.inserer(l1.end(), 23) ;
     EXPECT_EQ("[42, 23]", l1.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, insert_au_milieu) {
+    auto it = std::find(l2.begin(), l2.end(), 666) ;
+    l2.inserer(it, 1) ;
+    EXPECT_EQ("[23, 1, 666]", l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, supprimer_en_premier) {
+    l1.supprimer(l1.begin()) ;
+    EXPECT_TRUE(l1.est_vide()) ;
+}
+
+TEST_F(ListeSimpleTest, trouver_et_supprimer) {
+    auto it = l2.trouver(666) ;
+    l2.supprimer(it) ;
+    EXPECT_EQ("[23]", l2.to_string()) ;
+}
+
+TEST_F(ListeSimpleTest, trouver_second_et_supprimer) {
+    auto it = l2.trouver(23) ;
+    l2.supprimer(it) ;
+    EXPECT_EQ("[666]", l2.to_string()) ;
 }
 
 TEST_F(ListeSimpleTest, constructeur_copie) {
